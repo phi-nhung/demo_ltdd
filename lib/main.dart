@@ -7,6 +7,7 @@ import 'package:doan/login.dart';
 import 'package:doan/providers/item_provider.dart';
 import 'package:doan/providers/cart_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:doan/qlnhanvien.dart';
 
 void main() {
   runApp(
@@ -17,7 +18,7 @@ void main() {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: AdminHome(),
+        home: QuanLyNhanVien(),
       ),
     ),
   );
