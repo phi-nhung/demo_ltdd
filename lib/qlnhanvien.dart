@@ -104,7 +104,36 @@ class _QuanLyNhanVienState extends State<QuanLyNhanVien> {
                             child: Text(nhanvien.tennhanvien[0])),
                         title: Text(nhanvien.tennhanvien, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         subtitle: Text(nhanvien.chucvu, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-                        trailing: Icon(Icons.account_circle, size: 20, color: Color.fromARGB(255, 18, 18, 18)),
+                        trailing: IconButton(icon: Icon(Icons.account_circle), onPressed: () {
+                          showDialog(context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Thông tin chi tiết của nhân viên'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Mã nhân viên: ${nhanvien.manhanvien}', style: TextStyle(fontSize: 16)),
+                                SizedBox(height: 10,),
+                                Text('Tên nhân viên: ${nhanvien.tennhanvien}', style: TextStyle(fontSize: 16)),
+                                SizedBox(height: 10,),
+                                Text('Email: ${nhanvien.email}', style: TextStyle(fontSize: 16)),
+                                SizedBox(height: 10,),
+                                Text('Số điện thoại: ${nhanvien.sdt}', style: TextStyle(fontSize: 16)),
+                                SizedBox(height: 10,),
+                                Text('Chức vụ: ${nhanvien.chucvu}', style: TextStyle(fontSize: 16)),
+                                SizedBox(height: 10,),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('Đóng'),
+                              ),
+                            ],
+                          ),
+                          );
+                        }
+                        )
                       );
                     },
                   ),
