@@ -1,46 +1,172 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'database_helper.dart';
 
-class QuanLyNhanVien extends StatefulWidget {
-  const QuanLyNhanVien({super.key});
+class QL_NhanVien extends StatefulWidget {
+  const QL_NhanVien({super.key});
+
   @override
-  State<QuanLyNhanVien> createState() => _QLNhanVien();
+  State<QL_NhanVien> createState() => _QL_NhanVienState();
 }
 
-class _QLNhanVien extends State<QuanLyNhanVien> {
-  // Danh sách nhân viên mẫu
-  final List<Map<String, dynamic>> nhanViens = [
-    {"name": "Nguyễn Văn A", "position": "Quản lý", "icons": [Icons.account_box]},
-    {"name": "Trần Thị B", "position": "Nhân viên", "icons": [Icons.account_box]},
-    {"name": "Lê Văn C", "position": "Kế toán", "icons": [Icons.account_box]},
-    {"name": "Hoàng Thị D", "position": "Nhân viên", "icons": [Icons.account_box]},
-    {"name": "Phạm Văn E", "position": "Bảo vệ", "icons": [Icons.account_box]},
-    {"name": "Đặng Thị F", "position": "Nhân viên", "icons": [Icons.account_box]},
-    {"name": "Lý Văn G", "position": "Kế toán", "icons": [Icons.account_box]},
-    {"name": "Bùi Thị H", "position": "Nhân viên", "icons": [Icons.account_box]},
-    {"name": "Dương Văn I", "position": "Nhân viên", "icons": [Icons.account_box]},
-    {"name": "Ngô Thị K", "position": "Quản lý", "icons": [Icons.account_box]},
-  ];
+class _QL_NhanVienState extends State<QL_NhanVien> {
+  List<Map<String, dynamic>> nhanvien = [];
+  TextEditingController searchController = TextEditingController();
+  String selectedPosition = "Tất cả";
+
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNhanVien();
+  }
+
+  Future<void> _loadNhanVien({String position = "Tất cả"}) async {
+  String sql = '''
+    SELECT MANHANVIEN, HOTEN, CHUCVU, SDT
+    FROM NHANVIEN
+  ''';
+
+  List<Object?> args = [];
+
+  if (position != "Tất cả") {
+    sql += " WHERE CHUCVU = ?";
+    args.add(position);
+  }
+
+  final data = await DatabaseHelper.rawQuery(sql, args);
+  setState(() {
+    nhanvien = data;
+    selectedPosition = position;
+  });
+}
+
+
+  Future<void> _searchNhanVien(String keyword) async {
+  final data = await DatabaseHelper.rawQuery('''
+    SELECT MANHANVIEN, HOTEN, CHUCVU, SDT
+    FROM NHANVIEN
+    WHERE HOTEN LIKE ?
+  ''', ['%$keyword%']);
+
+  setState(() {
+    nhanvien = data;
+  });
+}
+
+
+  void _showAddDialog() {
+    TextEditingController nameController = TextEditingController();
+    TextEditingController phoneController = TextEditingController();
+    TextEditingController positionController = TextEditingController();
+
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Thêm nhân viên"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameController, decoration: InputDecoration(labelText: "Họ tên")),
+            TextField(controller: phoneController, decoration: InputDecoration(labelText: "SĐT")),
+            TextField(controller: positionController, decoration: InputDecoration(labelText: "Chức vụ")),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("Huỷ")),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameController.text.isNotEmpty) {
+                await DatabaseHelper.insert('NHANVIEN', {
+                  'HOTEN': nameController.text,
+                  'SDT': phoneController.text,
+                  'CHUCVU': positionController.text,
+                });
+                Navigator.pop(context);
+                _loadNhanVien();
+              }
+            },
+            child: Text("Thêm"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditDialog(Map<String, dynamic> employee) {
+    TextEditingController nameController = TextEditingController(text: employee['HOTEN']);
+    TextEditingController phoneController = TextEditingController(text: employee['SDT']);
+    TextEditingController positionController = TextEditingController(text: employee['CHUCVU']);
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Sửa nhân viên"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameController, decoration: InputDecoration(labelText: "Họ tên")),
+            TextField(controller: phoneController, decoration: InputDecoration(labelText: "SĐT")),
+            TextField(controller: positionController, decoration: InputDecoration(labelText: "Chức vụ")),
+          ],
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text("Huỷ")),
+          ElevatedButton(
+            onPressed: () async {
+              await DatabaseHelper.update(
+                'NHANVIEN',
+                employee['MANHANVIEN'],
+                {
+                  'HOTEN': nameController.text,
+                  'SDT': phoneController.text,
+                  'CHUCVU': positionController.text,
+                },
+                idColumn: 'MANHANVIEN',
+              );
+              Navigator.pop(context);
+              _loadNhanVien();
+            },
+            child: Text("Cập nhật"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteEmployee(int manv) async {
+    await DatabaseHelper.delete('NHANVIEN', manv, idColumn: 'MANHANVIEN');
+    _loadNhanVien();
+  }
+
+  void _confirmDeleteEmployee(int manv) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Xác nhận xoá'),
+        content: Text('Bạn có chắc chắn muốn xoá nhân viên này không?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Huỷ')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteEmployee(manv);
+            },
+            child: Text('Xoá', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 224, 224, 224),
-        title: const Text(
-          "Quản lý nhân viên",
-          style: TextStyle(color: Color.fromARGB(255, 30, 30, 30)),
-        ),
-        centerTitle: true,
-        toolbarHeight: 50,
-        leading: IconButton(onPressed: () {}, icon: Icon(Icons.menu)),
-        actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.notifications)),
-          IconButton(onPressed: () {}, icon: Icon(Icons.add)),
-        ],
+        title: Text("Danh sách nhân viên"),
       ),
       body: Column(
         children: [
-          // Thanh lọc tìm kiếm & sắp xếp
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             color: Color.fromARGB(255, 244, 238, 238),
@@ -49,46 +175,100 @@ class _QLNhanVien extends State<QuanLyNhanVien> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, color: Color.fromARGB(255, 18, 18, 18), size: 20),
-                    SizedBox(width: 5),
                     DropdownButton<String>(
-                      value: "Toàn thời gian",
+                      value: selectedPosition,
                       underline: SizedBox(),
                       icon: Icon(Icons.arrow_drop_down, color: Color.fromARGB(255, 18, 18, 18)),
                       style: TextStyle(color: Color.fromARGB(255, 18, 18, 18), fontSize: 16),
-                      items: ["Toàn thời gian", "Hôm nay", "Tuần này", "Tháng này"]
-                          .map((String value) => DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              ))
-                          .toList(),
-                      onChanged: (newValue) {},
+                      items: ["Tất cả", "Quản lý", "Nhân viên"].map((String value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      )).toList(),
+                      onChanged: (newValue) {
+                        if (newValue != null) {
+                          _loadNhanVien(position: newValue);
+                        }
+                      },
                     ),
                   ],
                 ),
                 Row(
                   children: [
-                    IconButton(onPressed: () {}, icon: Icon(Icons.search), color: Color.fromARGB(255, 18, 18, 18)),
-                    IconButton(onPressed: () {}, icon: Icon(Icons.swap_vert), color: Color.fromARGB(255, 18, 18, 18)),
+                    Container(
+                      width: 150,
+                      height: 40,
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade400),
+                      ),
+                      child: TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Tìm theo tên',
+                          border: InputBorder.none,
+                        ),
+                        onSubmitted: (value) {
+                          _searchNhanVien(value.trim());
+                        },
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.search, color: Color.fromARGB(255, 18, 18, 18)),
+                      onPressed: () {
+                        _searchNhanVien(searchController.text.trim());
+                      },
+                    ),
                   ],
                 )
               ],
-            ),
+            )
           ),
           const SizedBox(height: 10),
-          // Danh sách nhân viên
           Expanded(
             child: ListView.builder(
-              itemCount: nhanViens.length,
-              padding: const EdgeInsets.all(10),
-              itemBuilder: (BuildContext context, int index) {
-                final nhanVien = nhanViens[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: NhanVien(
-                    title: nhanVien["name"],
-                    chucvu: nhanVien["position"],
-                    icon: nhanVien["icons"].cast<IconData>(),
+              itemCount: nhanvien.length,
+              itemBuilder: (context, index) {
+                final emp = nhanvien[index];
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  elevation: 2,
+                  color: const Color.fromARGB(255, 229, 228, 228) ,
+                  child: InkWell(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  emp['HOTEN'],
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 4),
+                                Text("Chức vụ: ${emp['CHUCVU'] ?? ''}"),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, color: const Color.fromARGB(255, 81, 81, 81)),
+                                onPressed: () => _showEditDialog(emp),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: const Color.fromARGB(255, 81, 81, 81)),
+                                onPressed: () => _confirmDeleteEmployee(emp['MANHANVIEN']),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 );
               },
@@ -96,65 +276,10 @@ class _QLNhanVien extends State<QuanLyNhanVien> {
           ),
         ],
       ),
-    );
-  }
-}
-
-// Widget hiển thị 1 nhân viên
-class NhanVien extends StatelessWidget {
-  final String title;
-  final String chucvu;
-  final List<IconData> icon;
-
-  const NhanVien({
-    Key? key,
-    required this.title,
-    required this.chucvu,
-    this.icon = const [],
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Color.fromARGB(255, 247, 247, 247),
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(10),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: Color.fromARGB(255, 68, 72, 80),
-            child: Text(title[0], style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(chucvu, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-              ],
-            ),
-          ),
-          if (icon.isNotEmpty)
-            Row(
-              children: icon.map((iconData) {
-                return Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Icon(iconData, size: 20, color: Color.fromARGB(255, 18, 18, 18)),
-                );
-              }).toList(),
-            ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddDialog,
+        backgroundColor: Colors.white,
+        child: Icon(Icons.add),
       ),
     );
   }

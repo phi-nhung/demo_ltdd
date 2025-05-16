@@ -7,6 +7,8 @@ import 'package:badges/badges.dart' as badges;
 import 'package:doan/screens/manage_items_screen.dart'; // Add this import
 
 class OrderScreen extends StatefulWidget {
+  final int? datban;
+  const OrderScreen({Key? key, this.datban}) : super(key: key);
   @override
   _OrderScreenState createState() => _OrderScreenState();
 }
@@ -21,6 +23,16 @@ class _OrderScreenState extends State<OrderScreen> {
   };
   double _icePercentage = 50;
   double _sugarPercentage = 50;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.datban != null) {
+      _selectedTable = widget.datban;
+      _orderType = 'Tại bàn'; 
+    }
+  }
+
 
   void _showInvoiceDialog(BuildContext context, List<CartItem> items, double totalAmount, CartProvider cart, int? tableNumber) {
     showDialog(

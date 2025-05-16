@@ -31,13 +31,22 @@ class DatabaseHelper {
       }
     }
 
-    return await openDatabase(path);
+    return await openDatabase(path,
+      version: 2,  // tăng version lên 2 để trigger onUpgrade
+      onUpgrade: (Database db, int oldVersion, int newVersion) async {
+        if (oldVersion < 2) {
+          // Thêm cột GIO nếu version cũ là 1
+          await db.execute("ALTER TABLE HOADON ADD COLUMN GIO TEXT");
+          print("Đã thêm cột GIO vào bảng HOADON");
+        }
+      },
+    );
   }
 
-  static Future<List<Map<String, dynamic>>> rawQuery(String sql) async {
-    final db = await database;
-    return await db.rawQuery(sql);
-  }
+  static Future<List<Map<String, dynamic>>> rawQuery(String sql, [List<Object?>? arguments]) async {
+  final db = await database;
+  return await db.rawQuery(sql, arguments);
+}
 
   static Future<int> insert(String table, Map<String, dynamic> data) async {
     final db = await database;

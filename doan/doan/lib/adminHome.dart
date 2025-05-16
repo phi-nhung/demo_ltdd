@@ -1,6 +1,6 @@
 import 'package:doan/account.dart';
 import 'package:doan/qlnhanvien.dart';
-import 'package:doan/quanlyban.dart';
+import 'package:doan/qlban.dart';
 import 'package:flutter/material.dart';
 import 'package:doan/screens/manage_items_screen.dart';
 import'package:doan/screens/order_screen.dart';
@@ -50,10 +50,10 @@ class AdminHome extends StatelessWidget {
         children: [
           _buildDashboardItem(context,OrderScreen(), Icons.sell_outlined, "Bán hàng"),
           _buildDashboardItem(context, AdminHome(),Icons.list_alt_rounded, "Đơn hàng"),
-          _buildDashboardItem(context, QuanLyBan(),Icons.table_chart, "Quản lý bàn"),
+          _buildDashboardItem(context, QL_Ban(),Icons.table_chart, "Quản lý bàn"),
           _buildDashboardItem(context, ManageItemsScreen(),Icons.menu_book, "Quản lý menu"),
           _buildDashboardItem(context, QL_KhachHang(),Icons.person_pin_outlined, "Khách hàng"),
-          _buildDashboardItem(context,QuanLyNhanVien(), Icons.people, "Nhân viên"),
+          _buildDashboardItem(context, QL_NhanVien(), Icons.people, "Nhân viên"),
           _buildDashboardItem(context, DoanhThu(),Icons.bar_chart_outlined, "Doanh thu"),
           _buildDashboardItem(context,AdminHome(), Icons.settings, "Cài đặt"),
         ],
