@@ -2,12 +2,16 @@ import 'package:doan/account.dart';
 import 'package:doan/qlnhanvien.dart';
 import 'package:doan/qlban.dart';
 import 'package:flutter/material.dart';
-import 'package:doan/screens/manage_items_screen.dart';
 import'package:doan/screens/order_screen.dart';
 import 'package:doan/quanlykhachhang.dart';
 import 'package:doan/doanhthu.dart';
+import 'package:doan/qlmathang.dart';
+import 'package:doan/screens/settings_screen.dart';
+import 'package:doan/utils/app_localizations.dart'; 
 
 class AdminHome extends StatelessWidget {
+  const AdminHome({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,14 +52,14 @@ class AdminHome extends StatelessWidget {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         children: [
-          _buildDashboardItem(context,OrderScreen(), Icons.sell_outlined, "Bán hàng"),
-          _buildDashboardItem(context, AdminHome(),Icons.list_alt_rounded, "Đơn hàng"),
-          _buildDashboardItem(context, QL_Ban(),Icons.table_chart, "Quản lý bàn"),
-          _buildDashboardItem(context, ManageItemsScreen(),Icons.menu_book, "Quản lý menu"),
-          _buildDashboardItem(context, QL_KhachHang(),Icons.person_pin_outlined, "Khách hàng"),
-          _buildDashboardItem(context, QL_NhanVien(), Icons.people, "Nhân viên"),
-          _buildDashboardItem(context, DoanhThu(),Icons.bar_chart_outlined, "Doanh thu"),
-          _buildDashboardItem(context,AdminHome(), Icons.settings, "Cài đặt"),
+          _buildDashboardItem(context, OrderScreen(), Icons.sell_outlined, AppLocalizations.get(context, 'order')),
+          _buildDashboardItem(context, AdminHome(), Icons.list_alt_rounded, AppLocalizations.get(context, 'orders')),
+          _buildDashboardItem(context, QL_Ban(), Icons.table_chart, AppLocalizations.get(context, 'table_management')),
+          _buildDashboardItem(context, QL_MatHang(), Icons.menu_book, AppLocalizations.get(context, 'menu_management')),
+          _buildDashboardItem(context, QL_KhachHang(), Icons.person_pin_outlined, AppLocalizations.get(context, 'customers')),
+          _buildDashboardItem(context, QL_NhanVien(), Icons.people, AppLocalizations.get(context, 'employees')),
+          _buildDashboardItem(context, DoanhThu(), Icons.bar_chart_outlined, AppLocalizations.get(context, 'revenue')),
+          _buildDashboardItem(context, SettingsScreen(), Icons.settings, AppLocalizations.get(context, 'settings')),
         ],
       ),
     );

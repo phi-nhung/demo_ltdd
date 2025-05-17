@@ -1,35 +1,40 @@
+import 'dart:typed_data';
+
 class Item {
-  int id;
-  String name;
-  double price;
-  String image;
-  String description;
-  String category; // Thêm thuộc tính category
+  final int id;
+  final String name;
+  final String unit;
+  final double price;
+  final int quantity;
+  final String status;
+  final Uint8List? image;
+  final String category;
+  final String description;
 
   Item({
     required this.id,
     required this.name,
+    required this.unit,
     required this.price,
-    required this.image,
-    required this.description,
-    required this.category, // Thêm thuộc tính category
-  });
-}
-
-class CartItem {
-  Item item;
-  int quantity;
-  double icePercentage;
-  double sugarPercentage;
-  int? tableNumber;
-  DateTime addedTime; // Thêm thuộc tính thời gian
-
-  CartItem({
-    required this.item,
     required this.quantity,
-    required this.icePercentage,
-    required this.sugarPercentage,
-    this.tableNumber,
-    required this.addedTime, // Thêm thuộc tính thời gian
+    required this.status,
+    this.image,
+    required this.category,
+    this.description = '',
   });
+
+  factory Item.fromMap(Map<String, dynamic> map) {
+    return Item(
+      id: map['MASANPHAM'],
+      name: map['TENSANPHAM'],
+      unit: map['DONVITINH'] ?? '',
+      price: (map['GIABAN'] is int) ? (map['GIABAN'] as int).toDouble() : (map['GIABAN'] as double),
+      quantity: map['SOLUONGTON'] ?? 0,
+      status: map['TRANGTHAI'] ?? '',
+      image: map['HINHANH'],
+      category: map['TENDANHMUC'] ?? '',
+      description: '', // Nếu có cột mô tả thì lấy thêm
+    );
+  }
 }
+
